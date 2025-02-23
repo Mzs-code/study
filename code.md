@@ -99,17 +99,133 @@
    3. 快慢指针-可以转换为判断是否是环形链表
 4. 两数之和
    1. https://leetcode.cn/problems/two-sum/description/
-   2. 
+   2. 使用hash避免重复查找
 5. 四数相加II
+   1. https://leetcode.cn/problems/4sum-ii/
+   2. 将4数相加转换为2数相加-使用map存储
 6. 赎金信
+   1. https://leetcode.cn/problems/ransom-note/description/
+   2. 使用map
+   3. 也可以属于26个字母的数组
 7. 三数之和
+   1. https://leetcode.cn/problems/3sum/description/
+   2. 先排序,然后使用快慢指针,同时需要注意判重
 8. 四数之和
+   1. https://leetcode.cn/problems/4sum/
+   2. 先排序,再使用快慢指针
+   3. 和三数之和一样,只是多了一个for
+   4. 第一个for是第一个数字
+   5. 第二个for是第二个数字
+   6. 剩下的是left和right
+   7. target是负数时 需要2个条件都满足才能剪枝
+   8. nums[i] > target && nums[i] >= 0
 
 ## 字符串
+1. 反转字符串
+   1. https://leetcode.cn/problems/reverse-string/description/
+   2. 收尾交换,逐步缩进
+2. 反转字符串II
+   1. https://leetcode.cn/problems/reverse-string-ii/description/
+   2. for循环时候使用i += 2 * k
+   3. 再定义start = i end = min(i + k - 1, s.length() - 1) 交换
+3. 替换数字
+   1. https://kamacoder.com/problempage.php?pid=1064
+   2. 先计算计算数字个数,创建新的长度的数组
+   3. 原有数组复制
+   4. 从后往前判断,因为从前往后的会,每次都要重新调整后续数组的顺序,时间复杂度会变为n的2次方
+   5. 部分方法,判断是否是数字Character.isDigit()
+4. 翻转字符串里的单词
+   1. https://leetcode.cn/problems/reverse-words-in-a-string/description/
+   2. 利用现有函数
+      1. 去除首尾空格 s.trim()
+      2. 去除中间多余空格,并转为集合 Arrays.asList(s.split("\\s+"))
+      3. 翻转 Collections.reverse(list);
+      4. 拼接 String.join(" ", list)
+   3. 自行实现
+      1. 去除首尾空格-整个翻转-单个翻转
+      2. StringBuilder有一个setCharAt方法(index, value)
+   4. 使用双端队列 可以直接遍历后塞入头部
+      1. Deque<String> d = new ArrayDeque<>() d.offsetFirst(sb.toString()) sb.setLength(0)
+   5. 关联题-https://leetcode.cn/problems/length-of-last-word/description/
+      1. 从尾部开始关联
+5. 右旋字符串 
+   1. https://kamacoder.com/problempage.php?pid=1065
+   2. 无论是左旋还是右旋,都可以通过多次翻转完成
+   3. 也可以用substring切片
+   4. 先整体翻转,再前后单独翻转
+   5. 关联题-https://leetcode.cn/problems/zuo-xuan-zhuan-zi-fu-chuan-lcof/description/
+6. 实现 strStr()
+   1. https://leetcode.cn/problems/find-the-index-of-the-first-occurrence-in-a-string/description/
+   2. 基于滑动窗口-不断匹配-不匹配则删除头部
+      1. 使用StringBuilder的append与deleteCharAt(0)-时间复杂度O((m - n) * n)
+      2. 直接使用数组比较--时间复杂度O(m * n)
+   3. KMP-时间复杂度O(m + n)
+      1. 通过构建next数组存储相同的前缀和的位置
+      2. 在匹配失败时候,可以跳过一些不可能匹配的case,加速匹配效率
+      3. 可以在原有字符串前加" ",来让下标从1开始
+      4. 先构建next[], 相等则让j++,同时在next[]中记录下来
+      5. 不相等,则让j往前找相同的
+      6. 匹配时也是一样,不匹配时往前找最近的相同前缀
+      7. 如果j的长度相等,则说明已经完全匹配,结果为i - m;
+7. 重复的子字符串
+   1. https://leetcode.cn/problems/repeated-substring-pattern/description/
+   2. 枚举法-时间复杂度：O(n平方)
+      1. 如果一个长度为n的字符串s可以由它的一个长度为n1的子串s1重复多次构成
+      2. 那么n肯定是n1的倍数
+      3. s1是s的前缀
+      4. s[i]=s[i−n1]
+   3. 利用contains方法
+      1. s = s + s;
+      2. 去除首尾
+      3. 判断contains
+   4. KMP
+      1. 还是构建next数组
+      2. 判断条件(next[length] > 0 && length % (length - next[length]) == 0)
 
 ## 双指针法
 
 ## 栈与队列
+1. 用栈实现队列
+   1. https://leetcode.cn/problems/implement-queue-using-stacks/description/
+   2. 模拟题
+   3. 通过定义2个栈,分别用于入栈和出栈
+   4. 出栈如果为空,则从入栈中转移到出栈中
+2. 用队列实现栈
+   1. https://leetcode.cn/problems/implement-stack-using-queues/
+   2. 需要注意的Deque接口的几个方法
+      1. 队列
+         1. offer-新增元素在最后一个
+         2. poll-取出第一个元素,并删除
+         3. peek-取出第一个元素,不删除
+      2. 栈
+         1. push-新增元素在第一个
+         2. pop-取出第一个元素,并删除
+3. 有效的括号
+   1. https://leetcode.cn/problems/valid-parentheses/description/
+   2. 除了完全对称的case,还有()[]{}
+   3. 需要构建一个map用于映射对应符号
+4. 删除字符串中的所有相邻重复项
+   1. https://leetcode.cn/problems/remove-all-adjacent-duplicates-in-string/description/
+5. 逆波兰表达式求值
+   1. https://leetcode.cn/problems/evaluate-reverse-polish-notation/description/
+   2. leetcode 内置jdk的问题，不能使用==判断字符串是否相等
+   3. 逆波兰表达式由波兰的逻辑学家卢卡西维兹提出.逆波兰表达式的特点是：没有括号，运算符总是放在和它相关的操作数之后
+   4. 遇到数字则入栈；遇到算符则取出栈顶两个数字进行计算，并将结果压入栈中
+6. 滑动窗口最大值
+   1. https://leetcode.cn/problems/sliding-window-maximum/description/
+   2. 单调队列
+   3. 队列内不用存储窗口内的所有元素,只需要维护有可能成为最大的元素就行
+      1. poll-移除元素-如果当前值是最大值才移除
+      2. add-添加元素-从末尾开始比较
+      3. peek-最大元素
+7. 前 K 个高频元素
+   1. https://leetcode.cn/problems/top-k-frequent-elements/description/
+   2. 先使用map统计
+   3. 再注入到优先级队列中-定义时约定了排序方式
+   4. 再取k个
+   5. 小顶堆-从小到大
+   6. 大顶堆-从大到小
+   7. 方法二-也可以频次放在数组内,然后倒序获取
 
 ## 二叉树
 
