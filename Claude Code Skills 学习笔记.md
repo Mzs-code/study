@@ -2,22 +2,39 @@
 
 ## 目录
 
-- [1. 概述](#1-概述)
-- [2. 快速入门](#2-快速入门)
-- [3. Skill 的存储位置与作用范围](#3-skill-的存储位置与作用范围)
-- [4. User Skills 与 Plugin Skills](#4-user-skills-与-plugin-skills)
-  - [4.1 核心区别](#41-核心区别)
-  - [4.2 目录结构](#42-目录结构)
-  - [4.3 两者的关系](#43-两者的关系)
-  - [4.4 实际案例](#44-实际案例)
-- [5. SKILL.md 进阶写法](#5-skillmd-进阶写法)
-  - [5.1 两种 Skill 架构模式](#51-两种-skill-架构模式)
-  - [5.2 references/ 文件夹设计](#52-references-文件夹设计)
-  - [5.3 多步骤工作流 + 确认点设计](#53-多步骤工作流--确认点设计)
-  - [5.4 Skill 之间的调用关系](#54-skill-之间的调用关系)
-  - [5.5 脚本集成（scripts/）](#55-脚本集成scripts)
-  - [5.6 用户偏好系统（EXTEND.md）](#56-用户偏好系统extendmd)
-- [6. 参考链接](#6-参考链接)
+- [Claude Code Skills 学习笔记](#claude-code-skills-学习笔记)
+  - [目录](#目录)
+  - [1. 概述](#1-概述)
+  - [2. 快速入门](#2-快速入门)
+    - [创建你的第一个 Skill](#创建你的第一个-skill)
+  - [3. Skill 的存储位置与作用范围](#3-skill-的存储位置与作用范围)
+  - [4. User Skills 与 Plugin Skills](#4-user-skills-与-plugin-skills)
+    - [4.1 核心区别](#41-核心区别)
+    - [4.2 目录结构](#42-目录结构)
+    - [4.3 两者的关系](#43-两者的关系)
+    - [4.4 实际案例](#44-实际案例)
+    - [4.5 Skills 与 Plugin 的关闭管理](#45-skills-与-plugin-的关闭管理)
+  - [5. SKILL.md 进阶写法](#5-skillmd-进阶写法)
+    - [5.1 两种 Skill 架构模式](#51-两种-skill-架构模式)
+    - [5.2 references/ 文件夹设计](#52-references-文件夹设计)
+    - [5.3 多步骤工作流 + 确认点设计](#53-多步骤工作流--确认点设计)
+    - [5.4 Skill 之间的调用关系](#54-skill-之间的调用关系)
+    - [5.5 脚本集成（scripts/）](#55-脚本集成scripts)
+    - [5.6 用户偏好系统（EXTEND.md）](#56-用户偏好系统extendmd)
+    - [5.7 SKILL.md Frontmatter 字段全览](#57-skillmd-frontmatter-字段全览)
+    - [5.8 Skill 参数传递（$ARGUMENTS）](#58-skill-参数传递arguments)
+  - [6. 高阶写法](#6-高阶写法)
+    - [6.1 动态上下文注入（!command）](#61-动态上下文注入command)
+    - [6.2 在子代理中运行 Skill](#62-在子代理中运行-skill)
+    - [6.3 控制 Claude 的 Skill 访问权限](#63-控制-claude-的-skill-访问权限)
+    - [6.4 生成可视化输出](#64-生成可视化输出)
+  - [7. 故障排除](#7-故障排除)
+    - [Skill 未被触发](#skill-未被触发)
+    - [Skill 误触发过于频繁](#skill-误触发过于频繁)
+    - [Claude 看不到所有 Skills](#claude-看不到所有-skills)
+  - [8. 参考链接](#8-参考链接)
+    - [官方资源](#官方资源)
+    - [社区资源](#社区资源)
 
 ---
 
@@ -25,6 +42,8 @@
 
 1. **Skill 的本质是 Prompt-as-Program**：不管是本地 Skill 还是 Plugin Skill，核心都是一个 SKILL.md 文件——用 Markdown 写的「程序」，Claude 是「解释器」。
 2. **Plugin 是 Skill 的分发层**：就像 npm package 之于 JavaScript 文件，Plugin 给 Skill 加上了版本管理、远程安装、命名空间等分发能力。
+3. 将 SKILL.md 保持在 500 行以下
+4. 要在 skill 中启用扩展思考，在你的 skill 内容中的任何地方包含单词”ultrathink”。
 
 ## 2. 快速入门
 
@@ -114,6 +133,44 @@ Claude Code 原生的 Skill 系统，在项目目录中手动创建：
 - 适合个人或团队自用的工作流
 - 放在 `~/.claude/skills/` 全局生效，`.claude/skills/` 项目级别生效
 
+**旧版 Commands（`.claude/commands/`）— Deprecated**
+
+Skills 的前身格式，无需目录包裹，直接用单个 Markdown 文件定义 Skill。Claude Code 仍然会加载它们，在 `/context` 中归入 User Skills。
+
+```text
+~/.claude/commands/
+└── plannotator-review.md    ← 单文件即一个 Skill（旧版格式）
+```
+
+与 `skills/` 格式的区别：
+
+| 维度 | `commands/`（旧版） | `skills/`（当前） |
+| --- | --- | --- |
+| 文件结构 | 单个 `.md` 文件 | `<name>/SKILL.md` 目录结构 |
+| 支持附属文件 | 不支持 | 支持 scripts/、references/ 等 |
+| 状态 | Deprecated，仍可用 | 官方推荐 |
+
+**实例：`plannotator-review.md`**
+
+```markdown
+---
+description: Open interactive code review for current changes
+allowed-tools: Bash(plannotator:*)
+---
+
+## Code Review Feedback
+
+!`plannotator review`
+
+## Your task
+
+Address the code review feedback above.
+```
+
+这个 Skill 综合运用了多个高阶特性：
+- `allowed-tools: Bash(plannotator:*)` — 授权 Claude 免确认执行 plannotator 相关命令
+- `` !`plannotator review` `` — 动态上下文注入，调用前先执行命令并将输出注入 prompt
+
 **Plugins（`~/.claude/plugins/`）**
 
 Claude Code 的插件分发系统，通过 `/plugin` 命令从 GitHub 市场安装：
@@ -151,6 +208,46 @@ graph TD
 ### 4.4 实际案例
 
 以 `baoyu-skills` 为例：安装的 `content-skills` 来自 [JimLiu/baoyu-skills](https://github.com/JimLiu/baoyu-skills) 这个 GitHub 仓库，它包含了 15 个 Skills，打包成了一个 Plugin 来分发。如果作者只写一个 SKILL.md 放在博客上让你复制到 `.claude/skills/`，效果其实一样——只是没有自动安装、版本管理和依赖脚本的便利。
+
+### 4.5 Skills 与 Plugin 的关闭管理
+
+有三种方式控制 Skill 和 Plugin 的加载：
+
+**1. Skill 维度：`disable-model-invocation: true`**
+
+在 SKILL.md 的 frontmatter 中添加该字段，可避免 Skill 的 description 被自动注入 system prompt（节省 token），但不影响用户通过 `/skill-name` 手动调用：
+
+```yaml
+---
+name: codebase-visualizer
+description: Generate an interactive collapsible tree visualization...
+disable-model-invocation: true
+---
+```
+
+**2. Plugin 维度：在 Marketplace 中 Disable**
+
+通过 `/plugin` 命令将整个插件禁用。禁用后插件内所有 Skill 均不可用（包括手动 `/skill-name`），需重启 Claude Code 生效：
+
+```text
+content-skills Plugin · baoyu-skills · ◯ disabled
+```
+
+**3. 第三方工具：cc-switch 统一管理 Skills**
+
+使用 [cc-switch](https://github.com/farion1231/cc-switch) 通过软连接（symlink）管理 `~/.claude/skills/` 下的 Skill 文件夹：
+
+- 关闭技能 → 移除软连接 → `~/.claude/skills/` 下无该 Skill 文件夹（完全不可用）
+- 开启技能 → 创建软连接 → Skill 重新可用
+- 可批量开关，无需手动编辑文件
+
+**对比总结**
+
+| 方式 | 粒度 | `/skill-name` 可用 | 适用场景 |
+| --- | --- | --- | --- |
+| `disable-model-invocation: true` | 单个 Skill | 是 | 仅需按需使用，不希望自动触发 |
+| `/plugin` disable | 整个 Plugin | 否 | 暂时不需要某个插件的全部功能 |
+| cc-switch 移除软连接 | 单个 Skill | 否 | 统一管理多个 Skill 的开关状态 |
 
 ## 5. SKILL.md 进阶写法
 
@@ -490,7 +587,274 @@ EXTEND.md（default_provider: google）  ← 次之：用户持久化偏好
 
 > **设计建议**：如果你的 Skill 有超过2个用户可配置项，就值得引入 EXTEND.md 偏好系统。它让 Skill 从「一次性工具」变成「个性化助手」。
 
-## 6. 参考链接
+### 5.7 SKILL.md Frontmatter 字段全览
+
+前面的快速入门中介绍了 `name` 和 `description` 两个核心字段。实际上，frontmatter 还支持更多字段来精细控制 Skill 的行为：
+
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `name` | 否 | Skill 显示名称。省略则使用目录名。仅支持小写字母、数字和连字符（最长64字符） |
+| `description` | 推荐 | 描述 Skill 的功能和触发时机。Claude 根据它判断何时自动调用该 Skill。省略则使用 Markdown 正文的第一段 |
+| `argument-hint` | 否 | 自动补全时显示的参数提示。如 `[issue-number]`、`[filename] [format]` |
+| `disable-model-invocation` | 否 | 设为 `true` 可阻止 Claude 自动加载该 Skill，只能通过 `/name` 手动触发。默认 `false` |
+| `user-invocable` | 否 | 设为 `false` 可从 `/` 菜单中隐藏。用于用户不应直接调用的后台知识型 Skill。默认 `true` |
+| `allowed-tools` | 否 | Skill 激活时 Claude 可免授权使用的工具列表 |
+| `model` | 否 | Skill 激活时使用的模型 |
+| `context` | 否 | 设为 `fork` 可在独立的子代理上下文中运行 |
+| `agent` | 否 | 当 `context: fork` 时指定使用的子代理类型 |
+| `hooks` | 否 | 作用域限定在该 Skill 生命周期内的 Hooks 配置 |
+
+**常见组合场景**：
+
+**场景1：纯后台知识型 Skill**（不需要用户直接调用）
+
+```yaml
+---
+name: code-conventions
+description: Team coding conventions and patterns.
+user-invocable: false
+disable-model-invocation: false
+---
+```
+
+Claude 会根据上下文自动加载，但用户在 `/` 菜单中看不到它。
+
+**场景2：手动触发的危险操作**（不希望 AI 自动调用）
+
+```yaml
+---
+name: deploy-prod
+description: Deploy to production environment.
+disable-model-invocation: true
+argument-hint: [environment] [version]
+---
+```
+
+只能通过 `/deploy-prod staging v1.2.3` 手动触发，Claude 不会自作主张调用它。
+
+**场景3：在独立上下文中运行**（避免污染主对话）
+
+```yaml
+---
+name: deep-research
+description: Deep research on a topic.
+context: fork
+agent: Explore
+---
+```
+
+运行在独立子代理中，不会占用主对话的上下文窗口。
+
+> **字段使用原则**：大多数 Skill 只需 `name` + `description` 即可。只有当你需要控制触发方式、权限隔离或运行环境时，才需要用到其他字段。保持简单，按需添加。
+
+### 5.8 Skill 参数传递（$ARGUMENTS）
+
+用户和 Claude 都可以在调用 Skill 时传递参数。参数通过 `$ARGUMENTS` 占位符注入到 Skill 内容中。
+
+**基本用法：`$ARGUMENTS` 整体替换**
+
+```markdown
+---
+name: fix-issue
+description: Fix a GitHub issue
+disable-model-invocation: true
+---
+
+Fix GitHub issue $ARGUMENTS following our coding standards.
+
+1. Read the issue description
+2. Understand the requirements
+3. Implement the fix
+4. Write tests
+5. Create a commit
+```
+
+当你执行 `/fix-issue 123` 时，Claude 收到的实际内容是：
+
+```text
+Fix GitHub issue 123 following our coding standards.
+...
+```
+
+`$ARGUMENTS` 被替换为 `/` 命令名之后的所有文本。
+
+**位置参数：`$ARGUMENTS[N]` 和简写 `$N`**
+
+当需要传递多个独立参数时，可以按位置索引访问：
+
+```markdown
+---
+name: migrate-component
+description: Migrate a component from one framework to another
+---
+
+Migrate the $ARGUMENTS[0] component from $ARGUMENTS[1] to $ARGUMENTS[2].
+Preserve all existing behavior and tests.
+```
+
+也可以使用更简洁的 `$N` 简写形式（效果完全相同）：
+
+```markdown
+Migrate the $0 component from $1 to $2.
+Preserve all existing behavior and tests.
+```
+
+执行 `/migrate-component SearchBar React Vue` 时，Claude 收到：
+
+```text
+Migrate the SearchBar component from React to Vue.
+Preserve all existing behavior and tests.
+```
+
+**兜底行为**
+
+如果 Skill 内容中**没有使用** `$ARGUMENTS` 占位符，但用户调用时传了参数，Claude Code 会自动将参数追加到 Skill 内容末尾：
+
+```text
+ARGUMENTS: <用户输入的内容>
+```
+
+这保证了即使 Skill 作者没有预设参数位置，Claude 也能看到用户传递的信息。
+
+**搭配 `argument-hint` 使用**
+
+在 frontmatter 中添加 `argument-hint` 字段，可以在自动补全时提示用户应该输入什么参数：
+
+```yaml
+---
+name: fix-issue
+description: Fix a GitHub issue
+argument-hint: [issue-number]
+---
+```
+
+用户输入 `/fix-` 时，补全菜单会显示 `fix-issue [issue-number]`，提示需要一个 issue 编号。
+
+> **使用建议**：单参数场景用 `$ARGUMENTS`；多参数场景用 `$0`、`$1`、`$2` 简写更清晰。始终搭配 `argument-hint` 让用户知道该传什么。
+
+## 6. 高阶写法
+
+### 6.1 动态上下文注入（!command）
+
+使用 `` !`command` `` 语法可以在 Skill 内容发送给 Claude **之前**执行 Shell 命令，命令输出会替换占位符。Claude 收到的是已渲染的实际数据，而非命令本身。
+
+```yaml
+---
+name: pr-summary
+description: Summarize changes in a pull request
+context: fork
+agent: Explore
+allowed-tools: Bash(gh *)
+---
+
+## Pull request context
+- PR diff: !`gh pr diff`
+- PR comments: !`gh pr view --comments`
+- Changed files: !`gh pr diff --name-only`
+
+## Your task
+Summarize this pull request...
+```
+
+运行时，每个 `` !`command` `` 会立即执行，输出替换到 Skill 内容中，Claude 只看到最终结果。这是**预处理**，不是 Claude 执行的操作。
+
+### 6.2 在子代理中运行 Skill
+
+在 frontmatter 中添加 `context: fork`，Skill 将在隔离的子代理中运行，不会访问当前对话历史。Skill 内容成为驱动子代理的 prompt。
+
+```yaml
+---
+name: deep-research
+description: Research a topic thoroughly
+context: fork
+agent: Explore
+---
+
+Research $ARGUMENTS thoroughly:
+
+1. Find relevant files using Glob and Grep
+2. Read and analyze the code
+3. Summarize findings with specific file references
+```
+
+运行时：创建独立上下文 → 子代理接收 Skill 内容作为任务 → `agent` 字段决定执行环境（模型、工具、权限）→ 结果汇总返回主对话。
+
+`agent` 可选值：内置代理（`Explore`、`Plan`、`general-purpose`）或 `.claude/agents/` 下的自定义子代理。省略则默认 `general-purpose`。
+
+> **注意**：`context: fork` 仅适用于包含明确任务指令的 Skill。如果 Skill 只有指导原则而没有可执行的任务，子代理会因为没有明确目标而返回空结果。
+
+**Skill 与 Subagent 的协作方向**
+
+Skills 和 Subagents 可以从两个方向协作：
+
+| 方法 | System Prompt | Task | 也加载 |
+| --- | --- | --- | --- |
+| Skill + `context: fork` | 来自 agent 类型（`Explore`、`Plan` 等） | SKILL.md 内容 | CLAUDE.md |
+| Subagent + `skills` 字段 | Subagent 的 Markdown 正文 | Claude 的委派消息 | 预加载的 Skills + CLAUDE.md |
+
+使用 `context: fork` 时，你在 Skill 中编写任务并选择 agent 类型来执行；反向则是定义一个自定义 Subagent 并让它引用 Skills 作为参考材料（详见 Subagents 文档）。
+
+### 6.3 控制 Claude 的 Skill 访问权限
+
+默认情况下，Claude 可以调用任何未设置 `disable-model-invocation: true` 的 Skill。三种控制方式：
+
+| 方式 | 做法 | 效果 |
+| --- | --- | --- |
+| 禁用全部 | 在 `/permissions` 的 deny 规则中添加 `Skill` | Claude 无法调用任何 Skill |
+| 按名称控制 | `Skill(commit)` 精确匹配；`Skill(deploy *)` 前缀匹配 | 允许或拒绝特定 Skill |
+| 隐藏单个 | frontmatter 中设 `disable-model-invocation: true` | 从 Claude 上下文中完全移除 |
+
+> **区分**：`user-invocable: false` 只控制 `/` 菜单可见性；`disable-model-invocation: true` 才能阻止 Claude 以编程方式调用。
+
+### 6.4 生成可视化输出
+
+Skill 可以捆绑并运行任意语言的脚本，生成交互式 HTML 文件在浏览器中打开。这种模式适用于代码库可视化、依赖图、测试覆盖率报告、API 文档等场景。
+
+**示例：代码库可视化 Skill**
+
+```yaml
+---
+name: codebase-visualizer
+description: Generate an interactive collapsible tree visualization of your codebase.
+allowed-tools: Bash(python *)
+---
+
+# Codebase Visualizer
+
+Run the visualization script from your project root:
+
+python ~/.claude/skills/codebase-visualizer/scripts/visualize.py .
+
+This creates `codebase-map.html` and opens it in your default browser.
+```
+
+对应的 `scripts/visualize.py` 使用 Python 标准库扫描目录树，生成包含可折叠目录、文件大小、文件类型色彩标记的自包含 HTML 页面。脚本负责生成，Claude 负责编排调用。
+
+> **通用模式**：脚本做重活（数据收集、HTML 生成），Claude 做编排（决定何时运行、传什么参数）。这种模式可扩展到任何需要可视化输出的场景。
+
+## 7. 故障排除
+
+### Skill 未被触发
+
+- 检查 `description` 是否包含用户自然会说的关键词，Claude 依赖它来判断何时激活 Skill
+- 运行 `/context` 确认 Skill 已被加载（查看 Skills 列表）
+- 尝试更贴近 `description` 的措辞重新描述需求
+- 若 Skill 设置了 `user-invocable: true`（默认），可直接用 `/skill-name` 手动调用
+
+### Skill 误触发过于频繁
+
+- 将 `description` 写得更具体，缩小匹配范围
+- 添加 `disable-model-invocation: true`，改为仅支持手动 `/skill-name` 触发
+
+### Claude 看不到所有 Skills
+
+Skill 的 `description` 会被加载到上下文中，以便 Claude 知道有哪些可用技能。当 Skill 数量过多时，可能超出字符预算限制。
+
+- 预算规则：上下文窗口的 **2%**，回退值为 **16,000 字符**
+- 运行 `/context` 可查看是否有 Skill 因超出预算被排除
+- 可通过设置环境变量 `SLASH_COMMAND_TOOL_CHAR_BUDGET` 覆盖默认限制
+
+## 8. 参考链接
 
 ### 官方资源
 
