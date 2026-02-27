@@ -1,0 +1,13 @@
+.idea
+.classpath
+.project
+*.iml
+target/
+.DS_Store
+.gitattributes
+spy.log
+*.log
+.vscode/
+rest/
+logs/
+.mcp.json
