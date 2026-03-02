@@ -870,3 +870,5 @@ Skill 的 `description` 会被加载到上下文中，以便 Claude 知道有哪
 - [微信公众号文章](https://mp.weixin.qq.com/s/9F7XwoOMaAZkvj8gU4RJ9Q) — Skills 相关教程
 - [宝玉的博客](https://baoyu.io/) — 更多 AI 工具使用技巧
 - [通往 AGI 之路](https://waytoagi.feishu.cn/) — AI 学习资源汇总
+- [Awesome Claude Skills](https://github.com/ComposioHQ/awesome-claude-skills) — ComposioHQ 维护的 Claude 技能精选合集，涵盖文档处理、开发工具、通讯集成、项目管理等分类，可连接 500+ 应用实现跨平台自动化
+- [myclaude](https://github.com/stellarlinkco/myclaude) — 多代理工作流自动化框架，以 Claude Code 为编排层调度多个 AI 后端（Codex/Gemini/OpenCode），提供 do、omo、bmad 等多种开发工作流模块和 11 个核心命令
