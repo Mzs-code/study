@@ -5,8 +5,16 @@
 - [Claude Code Skills 学习笔记](#claude-code-skills-学习笔记)
   - [目录](#目录)
   - [1. 概述](#1-概述)
+    - [Skills vs Prompt vs MCP](#skills-vs-prompt-vs-mcp)
+    - [Skills 发展历史](#skills-发展历史)
+    - [渐进式披露的设计理念](#渐进式披露的设计理念)
+  - [1.5 实战案例](#15-实战案例)
+    - [案例1：AI 选题系统（1 Agent + 3 Skills 工作流）](#案例1ai-选题系统1-agent--3-skills-工作流)
+    - [案例2：整合包生成器](#案例2整合包生成器)
   - [2. 快速入门](#2-快速入门)
     - [创建你的第一个 Skill](#创建你的第一个-skill)
+      - [安装 Skill 的两种方式](#安装-skill-的两种方式)
+      - [从零创建一个 Skill](#从零创建一个-skill)
   - [3. Skill 的存储位置与作用范围](#3-skill-的存储位置与作用范围)
   - [4. User Skills 与 Plugin Skills](#4-user-skills-与-plugin-skills)
     - [4.1 核心区别](#41-核心区别)
@@ -45,9 +53,104 @@
 3. 将 SKILL.md 保持在 500 行以下
 4. 要在 skill 中启用扩展思考，在你的 skill 内容中的任何地方包含单词”ultrathink”。
 
+### Skills vs Prompt vs MCP
+
+用一个「实习生」比喻来理解三者的关系：
+
+| 维度 | Prompt | Skills | MCP |
+| --- | --- | --- | --- |
+| 比喻 | 口头当场交代任务 | 公司 SOP 手册 / 文件夹 | 门禁卡 |
+| 特点 | 临时、一次性、关闭对话就没了 | 可复用、按需翻阅、稳定发挥 | 让 AI 连接外部系统、调用外部能力 |
+| 持久性 | 仅当次对话有效 | 跨对话持久存在 | 持久配置 |
+| 典型场景 | “帮我写一段代码” | “按照团队规范做 Code Review” | “读取 Notion 数据库” / “操作 GitHub Issue” |
+
+> **一句话总结**：Prompt 是「说一次」，Skills 是「写成手册反复用」，MCP 是「给 AI 发门禁卡让它进入外部系统」。
+
+### Skills 发展历史
+
+| 时间 | 里程碑 |
+| --- | --- |
+| 2025年10月 | Anthropic 在 Claude Code 中首次支持 Skills 特性 |
+| 2025年12月18日 | Skills 作为标准开放，社区生态爆发 |
+| 目前 | 兼容工具已扩展至 Claude Code、OpenCode、Codex、Cursor、Codebuddy 等 |
+
+### 渐进式披露的设计理念
+
+Skill 的三级加载机制（description → SKILL.md 正文 → references/）不仅是技术设计，更遵循了 UX 设计中的**渐进式披露**原则：
+
+- **认知科学依据**：人的瞬时记忆容量约 7±2 个信息块（Miller 定律），AI 受限于 Token 窗口，本质相同
+- **”对话越长，模型越笨”**：上下文窗口中堆积过多信息会稀释关键指令的注意力权重，导致模型表现下降
+- **Token 寸土寸金**：只在需要时才加载对应的 reference 文件，而非一开始就把所有知识塞进上下文
+
+这就是为什么 Skill 系统设计了三级加载——先用 description（几十字）让 Claude 判断是否需要该 Skill，再加载 SKILL.md 正文（几百行以内），最后在执行到特定步骤时才按需加载 references/ 中的详细知识。
+
+## 1.5 实战案例
+
+在深入技术细节之前，先通过两个实战案例感受 Skills 的实际价值：
+
+### 案例1：AI 选题系统（1 Agent + 3 Skills 工作流）
+
+一个自媒体创作者可以用 1 个 Agent 编排 3 个 Skills，构建自动化选题流水线：
+
+```text
+热点采集 Skill          选题生成 Skill          选题审核 Skill
+(抓取热门话题)    →    (生成选题方案)    →    (质量打分+筛选)
+      │                                              │
+      └──────────── 迭代循环 ◀──────────────────────┘
+                   (未通过审核的选题回炉重造)
+```
+
+- **热点采集 Skill**：调用外部 API 抓取各平台热门话题，输出结构化的话题列表
+- **选题生成 Skill**：结合热点列表和账号定位，生成多个候选选题
+- **选题审核 Skill**：对每个选题打分（热度、竞争度、匹配度），未达标的回到生成环节迭代
+
+### 案例2：整合包生成器
+
+将一个 GitHub 项目打包成本地可用的整合包：
+
+```text
+输入: GitHub 项目 URL
+  │
+  ├── 克隆仓库 + 分析项目结构
+  ├── 识别依赖和配置需求
+  ├── 生成一键安装脚本
+  └── 打包成本地整合包（含说明文档）
+
+输出: 开箱即用的本地整合包
+```
+
+这类 Skill 将原本需要手动操作的多个步骤封装成一个可复用的自动化流程。
+
+> **关键启示**：Skills 的价值不在于单个 Skill 有多复杂，而在于**多个 Skill 组合成工作流**后产生的自动化能力。
+
 ## 2. 快速入门
 
 ### 创建你的第一个 Skill
+
+#### 安装 Skill 的两种方式
+
+**方法1：对话安装（推荐）**
+
+直接在 Claude Code 对话中告诉 Claude：
+
+```text
+安装这个 skill，skill 项目地址为: https://github.com/xxx/my-skill
+```
+
+Claude 会自动克隆仓库并将 Skill 放置到正确位置。
+
+**方法2：手动拖入目录**
+
+将 SKILL.md 文件放入对应目录：
+
+| 工具 | 目录路径 |
+| --- | --- |
+| Claude Code | `~/.claude/skills/<skill-name>/SKILL.md` |
+| OpenCode | `~/.config/opencode/skill/<skill-name>/SKILL.md` |
+
+> **注意**：初次使用时 `skills` 文件夹可能不存在，需要手动创建。Claude Code 2.1.0+ 版本支持 **Skills 热重载**——新增或修改 Skill 文件后无需重启即可生效。
+
+#### 从零创建一个 Skill
 
 **Step 1：创建 Skill 目录**
 
@@ -594,7 +697,7 @@ EXTEND.md（default_provider: google）  ← 次之：用户持久化偏好
 | 字段 | 必填 | 说明 |
 | --- | --- | --- |
 | `name` | 否 | Skill 显示名称。省略则使用目录名。仅支持小写字母、数字和连字符（最长64字符） |
-| `description` | 推荐 | 描述 Skill 的功能和触发时机。Claude 根据它判断何时自动调用该 Skill。省略则使用 Markdown 正文的第一段 |
+| `description` | 推荐 | 描述 Skill 的功能和触发时机。Claude 根据它判断何时自动调用该 Skill。省略则使用 Markdown 正文的第一段。**始终使用第三人称描述**，因为 description 会被注入到 system prompt 中作为工具说明 |
 | `argument-hint` | 否 | 自动补全时显示的参数提示。如 `[issue-number]`、`[filename] [format]` |
 | `disable-model-invocation` | 否 | 设为 `true` 可阻止 Claude 自动加载该 Skill，只能通过 `/name` 手动触发。默认 `false` |
 | `user-invocable` | 否 | 设为 `false` 可从 `/` 菜单中隐藏。用于用户不应直接调用的后台知识型 Skill。默认 `true` |
@@ -603,6 +706,18 @@ EXTEND.md（default_provider: google）  ← 次之：用户持久化偏好
 | `context` | 否 | 设为 `fork` 可在独立的子代理上下文中运行 |
 | `agent` | 否 | 当 `context: fork` 时指定使用的子代理类型 |
 | `hooks` | 否 | 作用域限定在该 Skill 生命周期内的 Hooks 配置 |
+
+**description 第三人称写法示例**：
+
+```yaml
+# ✅ 好 — 第三人称，描述 Skill 的功能
+description: 处理Excel文件并生成报告
+description: Explains code with visual diagrams and analogies
+
+# ❌ 不好 — 第一/二人称，像在对话
+description: 我可以帮助你处理Excel文件
+description: 你可以使用这个来处理Excel文件
+```
 
 **常见组合场景**：
 
@@ -872,3 +987,4 @@ Skill 的 `description` 会被加载到上下文中，以便 Claude 知道有哪
 - [通往 AGI 之路](https://waytoagi.feishu.cn/) — AI 学习资源汇总
 - [Awesome Claude Skills](https://github.com/ComposioHQ/awesome-claude-skills) — ComposioHQ 维护的 Claude 技能精选合集，涵盖文档处理、开发工具、通讯集成、项目管理等分类，可连接 500+ 应用实现跨平台自动化
 - [myclaude](https://github.com/stellarlinkco/myclaude) — 多代理工作流自动化框架，以 Claude Code 为编排层调度多个 AI 后端（Codex/Gemini/OpenCode），提供 do、omo、bmad 等多种开发工作流模块和 11 个核心命令
+- [Superpowers](https://github.com/obra/superpowers) — 高质量 Skills 仓库
