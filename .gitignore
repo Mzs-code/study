@@ -11,3 +11,5 @@ spy.log
 rest/
 logs/
 .mcp.json
+.claude
+.env
