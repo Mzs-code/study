@@ -69,7 +69,7 @@ Restart the gateway to load plugins.
 微信用户 → 腾讯 iLink 云服务 → OpenClaw 插件（长轮询）→ OpenClaw Gateway → AI 模型
 ```
 
-![架构示意图](1.jpeg)
+![架构示意图](https://github.com/user-attachments/assets/8f4d2fce-4d9f-4fd8-aa8b-08e755970808)
 
 ---
 
@@ -79,7 +79,7 @@ Restart the gateway to load plugins.
 
 微信提供了入口，WeClaw 对这个入口进行桥接，让你可以直接通过微信与 AI Agent 交互。
 
-![WeClaw 示意图](2-1.png)
+![WeClaw 示意图](https://github.com/user-attachments/assets/07007e39-4d76-4be1-b60b-3a8c89582b7f)
 
 ### 安装
 
@@ -124,4 +124,4 @@ curl -X POST http://127.0.0.1:18011/api/send \
   -d '{"to": "user_id@im.wechat", "text": "你好，来自 weclaw"}'
 ```
 
-![推送示意图](3.jpg)
+![推送示意图](https://github.com/user-attachments/assets/2e09502d-f4f2-495c-b03d-12dac0a55e12)
