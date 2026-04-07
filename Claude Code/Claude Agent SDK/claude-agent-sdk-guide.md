@@ -162,6 +162,7 @@ env: {
 
 ## 相关资源
 
-- [Claude Agent SDK 官方文档](https://platform.claude.com/docs/zh-CN/agent-sdk/quickstart)
+- [Claude Agent SDK 官方文档（中文）](https://platform.claude.com/docs/zh-CN/agent-sdk/quickstart)
+- [Claude Agent SDK 实战 Demo（liruifengv）](https://liruifengv.com/posts/cladue-agent-sdk-demo/)
 - [Claude Code 官方文档](https://docs.anthropic.com/en/docs/claude-code)
 - 示例项目：`/Users/maozhenshou/Documents/AICode/my-agent`
