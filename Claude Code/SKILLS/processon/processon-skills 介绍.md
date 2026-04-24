@@ -90,7 +90,7 @@ https://smart.processon.com/editor
 
 将 DSL 粘贴进去即可在 ProcessOn 画布上继续编辑样式、节点、泳道、配色。
 
-![在线编辑](./images/05-online-editor.png)
+<img width="2800" height="1632" alt="image" src="https://github.com/user-attachments/assets/77d06a3a-2176-4a5a-b0e3-954d37765c72" />
 
 ### 图片预览链接
 
@@ -100,7 +100,8 @@ https://smart.processon.com/editor
 https://ai-smart.ks3-cn-beijing.ksyuncs.com/gallery/xxxxxxxx.png
 ```
 
-![最终流程图](./images/06-final-flowchart.png)
+<img width="2018" height="1642" alt="image" src="https://github.com/user-attachments/assets/90614f99-5e04-450d-b90c-975b20b46f58" />
+
 
 ---
 
