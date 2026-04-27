@@ -11,6 +11,7 @@
 - [主题切换](#主题切换)
 - [查看快捷键](#查看快捷键)
 - [其他特性](#其他特性)
+- [已知问题](#已知问题)
 - [参考链接](#参考链接)
 
 ---
@@ -98,6 +99,40 @@ ghostty +list-keybinds --default
 ```ini
 copy-on-select = clipboard
 ```
+
+---
+
+## 已知问题
+
+### Cmd+点击 无法打开本地文件路径
+
+**现象**：在 iTerm2 中可以 `Cmd` + 鼠标点击直接打开终端里显示的本地文件绝对路径（如 `/Users/xxx/foo.md`），但在 Ghostty 中点击没有反应。
+
+**原因**：Ghostty 默认的链接识别规则**只匹配 URL**，不识别裸文件路径。官方文档原文：
+
+> A default link that matches a URL and opens it in the system opener always exists.
+
+虽然 Ghostty 提供了 `link` 配置项允许通过自定义正则匹配文件路径，但官方文档同时标注 **"TODO: This can't currently be set!"**，即**该自定义配置目前尚未真正实现**。可点击文件路径功能在 [Issue #1972](https://github.com/ghostty-org/ghostty/issues/1972) 中已被提出，但**官方仍未实现**。
+
+**临时解决方案**：
+
+1. 使用 `file://` URL 前缀（Ghostty 能识别 URL，可 Cmd+点击打开）：
+   ```
+   file:///Users/xxx/foo.md
+   ```
+2. 在终端里直接执行 `open` 命令：
+   ```bash
+   open ./foo.md
+   ```
+3. 在 `~/.zshrc` 中添加别名，简化输入：
+   ```zsh
+   alias o='open'
+   ```
+
+**参考来源**：
+
+- [Ghostty Configuration Reference - link option](https://ghostty.org/docs/config/reference#link)
+- [Clickable file paths · Issue #1972](https://github.com/ghostty-org/ghostty/issues/1972)
 
 ---
 
