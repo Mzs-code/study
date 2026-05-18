@@ -1,6 +1,8 @@
 # Surge 接入 VLESS(借助 sing-box,通过 External Proxy Program 机制)
 
-> 目标:让 Surge 使用一个 VLESS+Reality 节点。由于 Surge 原生不支持 VLESS,通过 Surge 的 External Proxy Program(EPP)拉起 sing-box 作为协议适配层,Surge 通过本地 SOCKS5 与 sing-box 通信。
+> 目标:让 Surge 使用一个 VLESS+Reality 节点。
+> 
+> 由于 Surge 原生不支持 VLESS,通过 Surge 的 External Proxy Program(EPP)拉起 sing-box 作为协议适配层,Surge 通过本地 SOCKS5 与 sing-box 通信。
 >
 > 测试环境:macOS(Apple Silicon)+ Surge Mac + sing-box 1.13.x。
 
